@@ -30,10 +30,11 @@ window.onload = function () {
 
 
 function load() {
-  let start = calculateXYstart();
+  let zoomfactor = zoomFactorToFit();
+  let start = calculateXYstart(zoomfactor);
   panzoom = Panzoom(imageContainerElement, {
-    startScale: zoomFactorToFit()
-    ,
+    startScale: zoomfactor,
+    minScale: 0.01,
     startX: start.x,
     startY: start.y,
   });
@@ -64,15 +65,16 @@ function load() {
   });
 }
 
-function calculateXYstart(){
+function calculateXYstart(zoomfactor){
   let result = {x: null, y:null};
-  if(imageElement.clientHeight>imageElement.clientWidth){
-    result.x = -imageElement.clientWidth * 0.5;
-    result.y = imageContainerElement.clientHeight-imageElement.clientHeight * 0.5;
+  result.x = -(imageElement.naturalWidth - imageElement.naturalWidth*zoomfactor)/2;
+  result.y = -(imageElement.naturalHeight - imageElement.naturalHeight*zoomfactor)/2;
+
+/*   if(imageElement.clientHeight>imageElement.clientWidth){
+    result.y = result.x;
   } else {
-    result.x = imageContainerElement.clientWidth-imageElement.clientWidth * 0.5;
-    result.y = -imageElement.clientHeight * 0.5;
-  }
+    result.y = result.x;
+  } */
   return result;
 }
 
@@ -82,13 +84,10 @@ function zoomFactorToFit() {
   const imageHeight = imageElement.naturalHeight;
   const containerWidth = imageElement.parentElement.clientWidth;
   const containerHeight = imageElement.parentElement.clientHeight;
-  const isPortrait = imageHeight > imageWidth;
-  if (isPortrait) {
-    factor = Math.min(containerHeight / imageHeight, factor);
-  } else {
-    factor = Math.min(containerWidth / imageWidth, factor);
-  }
-  return factor;
+  const widthFactor = containerWidth / imageWidth;
+  const heightFactor = containerHeight / imageHeight;
+
+  return  Math.min(factor, widthFactor, heightFactor);
 }
 
 function zoomToPoint(event) {
